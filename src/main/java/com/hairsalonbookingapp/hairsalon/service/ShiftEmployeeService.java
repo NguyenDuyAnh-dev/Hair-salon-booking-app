@@ -20,6 +20,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -111,7 +112,7 @@ public class ShiftEmployeeService {
     public List<ShiftEmployeeResponse> generateShiftEmployee(AccountForEmployee accountForEmployee){
         String days = accountForEmployee.getDays(); // LẤY CÁC NGÀY STYLIST CHỌN
         String[] daysOfWeek = days.split(","); // LIST CÁC NGÀY STYLIST CHỌN
-        List<LocalDate> nextWeekDays = timeService.getNextWeekDays(timeService.today); // LIST CÁC NGÀY TUẦN SAU
+        List<LocalDate> nextWeekDays = timeService.getNextWeekDays(timeService.getToday()); // LIST CÁC NGÀY TUẦN SAU
         List<ShiftEmployee> shiftEmployeeList = new ArrayList<>();
         List<ShiftEmployeeResponse> shiftEmployeeResponseList = new ArrayList<>();
         for(String day : daysOfWeek){
@@ -173,13 +174,21 @@ public class ShiftEmployeeService {
     // TẠO ALL SHIFTS CHO ALL STYLISTS -> MANAGER LÀM
     public List<ShiftEmployeeResponse> generateAllShiftEmployees(){
         //CHECK XEM MANAGER ĐÃ DÙNG CHỨC NĂNG NÀY CHƯA
-        List<LocalDate> nextWeekDays = timeService.getNextWeekDays(timeService.today); // LIST CÁC NGÀY TUẦN SAU
+
+        List<LocalDate> nextWeekDays = timeService.getNextWeekDays(timeService.getToday()); // LIST CÁC NGÀY TUẦN SAU
+        String nextWeekDayString = nextWeekDays.toString(); // chuyển sang String
         List<ShiftEmployee> shiftEmployeeList = shiftEmployeeRepository.findAll(); // LIST CÁC SHIFT EMPLOYEE TRONG DB
+
+
         for(LocalDate nextWeekDay : nextWeekDays){
             for(ShiftEmployee shiftEmployee : shiftEmployeeList){
-                if(nextWeekDay.toString().equals(shiftEmployee.getDate())){
+                LocalDate shiftDate = LocalDate.parse(shiftEmployee.getDate());  // Giả sử shiftEmployee.getDate() có định dạng yyyy-MM-dd
+                if (nextWeekDay.equals(shiftDate)) {
                     throw new DuplicateEntity("You can only use this function once per week!!!");
                 }
+//                if(nextWeekDayString.equals(shiftEmployee.getDate())){
+//                    throw new DuplicateEntity("You can only use this function once per week!!!");
+//                }
             }
         }
         // => MANAGER CHƯA DÙNG CHỨC NĂNG NÀY
