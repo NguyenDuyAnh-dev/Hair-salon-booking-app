@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cập Nhật Lịch Hẹn Thành Công</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background-color: #ff7f50;
+            color: #ffffff;
+            padding: 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .content {
+            padding: 20px;
+            color: #333333;
+        }
+        .content p {
+            margin: 10px 0;
+            font-size: 16px;
+        }
+        .content p strong {
+            color: #555555;
+        }
+        .footer {
+            background-color: #f4f4f4;
+            padding: 20px;
+            text-align: center;
+        }
+        .footer p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #777777;
+        }
+        .btn {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 12px 25px;
+            background-color: #ff7f50;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+        .btn:hover {
+            background-color: #e76f3c;
+        }
+        @media only screen and (max-width: 600px) {
+            .container {
+                margin: 20px;
+            }
+            .header h1 {
+                font-size: 20px;
+            }
+            .content p {
+                font-size: 14px;
+            }
+            .btn {
+                width: 100%;
+                padding: 12px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>🔄 Cập Nhật Lịch Hẹn Thành Công</h1>
+    </div>
+    <div class="content">
+        <p><strong>👤 Khách Hàng:</strong> [[${name}]]</p>
+        <p><strong>📋 Mã Lịch Hẹn:</strong> [[${appointmentID}]]</p>
+        <p><strong>💇 Dịch Vụ:</strong> [[${serviceName}]]</p>
+        <p><strong>✂️ Chuyên Viên:</strong> [[${stylistName}]]</p>
+        <p><strong>📅 Ngày Mới:</strong> [[${newDate}]]</p>
+        <p><strong>🕒 Giờ Mới:</strong> [[${newTime}]]</p>
+        <p><strong>💰 Chi Phí:</strong> [[${totalCost}]]</p>
+    </div>
+    <div class="footer">
+        <p>Cảm ơn bạn đã sử dụng dịch vụ của <strong>Hair Salon Booking App</strong>!</p>
+        <a th:href="${link}" class="btn">🔙 Quay lại Trang Chủ</a>
+    </div>
+</div>
+
+</body>
+</html>
