@@ -15,7 +15,7 @@ import java.util.List;
 public class TimeService {
 
     // GIẢ ĐỊNH NGÀY HIỆN TẠI
-    public final LocalDate today = getToday();
+    public LocalDate today = getToday();
     // THỜI GIAN BẮT ĐÂÙ VÀ KẾT THÚC CA LÀM VIỆC
 //    public final int startHour = 7;
 //    public final int endHour = 10;
@@ -88,6 +88,7 @@ public class TimeService {
         }
 
         return daysOfWeek;
+
     }
 
     /*// HÀM LỌC NGÀY

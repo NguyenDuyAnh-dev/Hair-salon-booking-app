@@ -12,7 +12,7 @@ public class ShiftWeekRequest {
     @Pattern(regexp = "MONDAY|TUESDAY|WEDNESDAY|THURSDAY|FRIDAY|SATURDAY")
     private String dayOfWeek;
 
-    private Date DateApply;
+//    private Date DateApply;
 
     @NotBlank(message = "Start hour must not be blank!")
     @Pattern(regexp = "^([01]\\d|2[0-3]):([0-5]\\d)$", message = "Invalid time!")
