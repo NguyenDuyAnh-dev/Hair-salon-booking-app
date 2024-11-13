@@ -26,6 +26,8 @@ import org.springframework.validation.annotation.Validated;
 import org.modelmapper.ModelMapper;
 
 
+import java.time.LocalDate;
+import java.time.Month;
 import java.util.*;
 
 @Service
@@ -50,6 +52,8 @@ public class AuthenticationService implements UserDetailsService {
     @Autowired
     EmailService emailService;
 
+    @Autowired
+    KPIMonthRepository kpiMonthRepository;
 
 
     @Autowired
@@ -270,6 +274,15 @@ public class AuthenticationService implements UserDetailsService {
                     oldAccount.setTargetKPI(account.getTargetKPI());
                 }
 
+                // Lưu KPI vào bảng KPI theo tháng
+                String currentMonth = LocalDate.now().getMonth().toString() + "-" + LocalDate.now().getYear();
+                KPIMonth kpiMonth = new KPIMonth();
+                kpiMonth.setKpi(oldAccount.getKPI());
+                kpiMonth.setTargetKPI(oldAccount.getTargetKPI());
+                kpiMonth.setMonth(currentMonth);
+                kpiMonth.setEmployee(oldAccount);
+                kpiMonthRepository.save(kpiMonth); // Lưu vào bảng KPI theo tháng
+
                 if(account.getStylistSelectionFee() != null){
                     if(account.getStylistSelectionFee() < 0){
                         throw new UpdatedException("Stylist Selection Fee must be at least 0");
@@ -286,6 +299,41 @@ public class AuthenticationService implements UserDetailsService {
                 throw new UpdatedException("employee can not update!");
             }
         }
+    }
+
+    public String resetKPIForAllStylist() {
+        List<AccountForEmployee> employees = employeeRepository.findAccountForEmployeesByIsDeletedFalse();
+        if (employees.isEmpty()) {
+            throw new Duplicate("No employees found");
+        }
+
+        String currentMonth = LocalDate.now().getMonth().toString();
+
+        for (AccountForEmployee employee : employees) {
+            // Kiểm tra xem đã có bản ghi KPI cho stylist này trong tháng hiện tại chưa
+            Optional<KPIMonth> existingKPIRecord = kpiMonthRepository.findByEmployeeAndMonth(employee, currentMonth);
+
+            if (existingKPIRecord.isPresent()) {
+                // Nếu đã có, cộng dồn KPI mới vào KPI cũ
+                KPIMonth kpiMonth = existingKPIRecord.get();
+                kpiMonth.setKpi(kpiMonth.getKpi() + employee.getKPI());
+                kpiMonthRepository.save(kpiMonth);
+            } else {
+                // Nếu chưa có, tạo bản ghi KPI mới cho tháng hiện tại
+                KPIMonth kpiMonth = new KPIMonth();
+                kpiMonth.setKpi(employee.getKPI());
+                kpiMonth.setTargetKPI(employee.getTargetKPI());
+                kpiMonth.setMonth(currentMonth);
+                kpiMonth.setEmployee(employee);
+                kpiMonthRepository.save(kpiMonth);
+            }
+
+            // Đặt lại KPI của nhân viên về 0 sau khi đã cộng dồn hoặc tạo mới
+            employee.setKPI(0);
+            employeeRepository.save(employee);
+        }
+
+        return "Đặt lại KPI cho tất cả stylist thành công";
     }
 
     public EditSalaryEmployeeResponse updatedBasicSalaryEmployee(RequestEditBasicSalaryEmployee requestEditBasicSalaryEmployee, String id) {
