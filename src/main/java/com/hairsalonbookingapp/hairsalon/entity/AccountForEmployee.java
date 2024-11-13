@@ -80,6 +80,10 @@ public class AccountForEmployee implements UserDetails {
     @Min(value = 0, message = "Fine Underated From KPI must at least 0")
     private Double FineUnderatedFromKPI;
 
+    @OneToMany(mappedBy = "employee")
+    @JsonIgnore
+    private List<KPIMonth> KPIMonths;
+
     private Date createdAt;
 
     @OneToMany(mappedBy = "accountForEmployee")

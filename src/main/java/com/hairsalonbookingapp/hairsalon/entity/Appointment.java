@@ -50,4 +50,6 @@ public class Appointment {
 
     @OneToOne(mappedBy = "appointment")
     private Payment payment;
+
+    private String status = "Chưa phục vụ";// Đang phục vụ, Đã thanh toán
 }

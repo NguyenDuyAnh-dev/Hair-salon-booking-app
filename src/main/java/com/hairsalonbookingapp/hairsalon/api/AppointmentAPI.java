@@ -3,10 +3,7 @@ package com.hairsalonbookingapp.hairsalon.api;
 import com.hairsalonbookingapp.hairsalon.entity.Appointment;
 import com.hairsalonbookingapp.hairsalon.entity.Transaction;
 import com.hairsalonbookingapp.hairsalon.model.request.*;
-import com.hairsalonbookingapp.hairsalon.model.response.AppointmentResponse;
-import com.hairsalonbookingapp.hairsalon.model.response.AppointmentResponseInfo;
-import com.hairsalonbookingapp.hairsalon.model.response.AppointmentResponsePage;
-import com.hairsalonbookingapp.hairsalon.model.response.KPITotal;
+import com.hairsalonbookingapp.hairsalon.model.response.*;
 import com.hairsalonbookingapp.hairsalon.service.AppointmentService;
 import com.hairsalonbookingapp.hairsalon.service.PayService;
 import com.hairsalonbookingapp.hairsalon.service.TransactionService;
@@ -87,6 +84,7 @@ public class AppointmentAPI {
             } else if ("Cash".equalsIgnoreCase(paymentType.getPaymentType())) {
                 // Xử lý thanh toán tiền mặt
                 transactionService.createTransactionInCast(appointmentId);
+                appointmentService.completeAppointmentById(appointmentId);
                 return ResponseEntity.ok("Thanh toán tiền mặt thành công.");
             } else {
                 return ResponseEntity.badRequest().body("Loại thanh toán không hợp lệ.");
@@ -103,10 +101,10 @@ public class AppointmentAPI {
         return ResponseEntity.ok(transaction);
     }
 
-    @GetMapping("/KPI")
-    public ResponseEntity viewKPI(){
-        List<KPITotal> kpiTotalList = appointmentService.getAllKPI();
-        return ResponseEntity.ok(kpiTotalList);
+    @GetMapping("/KPI/{Month}")
+    public ResponseEntity viewKPI(@RequestParam String month , @RequestParam int page, @RequestParam(defaultValue = "10") int size){
+        KPIMonthListResponse kpiMonthListResponse = appointmentService.getAllKPI(month, page, size);
+        return ResponseEntity.ok(kpiMonthListResponse);
     }
 
     @PostMapping("/system")
@@ -137,5 +135,23 @@ public class AppointmentAPI {
     public ResponseEntity getAllUnCompletedAppointmentsByDateAndHour(@PathVariable String date, @PathVariable String hour, @RequestParam int page, @RequestParam(defaultValue = "2") int size){
         AppointmentResponsePage appointmentResponsePage = appointmentService.getAllUnCompletedAppontmentsInDay(date, hour, page, size);
         return ResponseEntity.ok(appointmentResponsePage);
+    }
+
+    @GetMapping("/uncompleted/{date}")
+    public ResponseEntity getAllUnCompletedAppointmentsByDate(@PathVariable String date, @RequestParam int page, @RequestParam(defaultValue = "2") int size){
+        AppointmentResponsePage appointmentResponsePage = appointmentService.getAllUnCompletedAppontments(date, page, size);
+        return ResponseEntity.ok(appointmentResponsePage);
+    }
+
+    @GetMapping("/detail/{appointmentId}")
+    public ResponseEntity getAppontmentDetail(@PathVariable long appointmentId){
+        AppointmentDetail appointmentDetail = appointmentService.getAppontmentDetail(appointmentId);
+        return ResponseEntity.ok(appointmentDetail);
+    }
+
+    @PutMapping("/accept/{appointmentId}")
+    public ResponseEntity acceptAppointment(@PathVariable long appointmentId){
+        AppointmentDetail appointmentDetail = appointmentService.acceptAppointment(appointmentId);
+        return ResponseEntity.ok(appointmentDetail);
     }
 }

@@ -69,6 +69,13 @@ public class AuthenticationAPI {
         return ResponseEntity.ok(oldAccount);
     }
 
+    //resset KPI cua employee bang manager
+    @PutMapping("/resetKPIForAllStylist")
+    public ResponseEntity ResetKPIForAllStylist(){ //@PathVariable de tim thang id tu FE
+        String oldAccount = authenticationService.resetKPIForAllStylist();
+        return ResponseEntity.ok(oldAccount);
+    }
+
     //update salary cua employee bang manager
     @PutMapping("/salaryEditByManager/{id}")
     public ResponseEntity updatedSalaryEmployeeByManager(@Valid @RequestBody RequestEditSsalaryEmployee account, @PathVariable String id){ //@PathVariable de tim thang id tu FE
