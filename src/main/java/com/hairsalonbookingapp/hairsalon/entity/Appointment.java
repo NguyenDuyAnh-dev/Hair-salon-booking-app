@@ -26,6 +26,7 @@ public class Appointment {
     private String date;
     private String startHour;
     private String stylist;
+    boolean isSystemChose = false;
 
     @OneToOne
     @JoinColumn(name = "slotId")

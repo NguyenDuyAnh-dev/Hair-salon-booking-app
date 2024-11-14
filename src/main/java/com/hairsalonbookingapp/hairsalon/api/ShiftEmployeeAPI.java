@@ -120,4 +120,16 @@ public class ShiftEmployeeAPI {
         return ResponseEntity.ok(shiftEmployeeResponsePage);
     }
 
+    @PostMapping("/date")
+    public ResponseEntity generateShiftsByDate(@RequestParam String stylistId, @RequestParam String startDate){
+        List<ShiftEmployeeResponse> shiftEmployeeResponseList = shiftEmployeeService.generateShiftEmployeeByDate(stylistId, startDate);
+        return ResponseEntity.ok(shiftEmployeeResponseList);
+    }
+
+    @PostMapping("/all/date")
+    public ResponseEntity generateAllShiftsByDate(@RequestParam String startDate){
+        List<ShiftEmployeeResponse> shiftEmployeeResponseList = shiftEmployeeService.generateAllShiftEmployeesByDate(startDate);
+        return ResponseEntity.ok(shiftEmployeeResponseList);
+    }
+
 }
