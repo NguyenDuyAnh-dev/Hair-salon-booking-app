@@ -307,11 +307,11 @@ public class AuthenticationService implements UserDetailsService {
             throw new Duplicate("No employees found");
         }
 
-        String currentMonth = LocalDate.now().getMonth().toString();
+        String currentMonth = LocalDate.now().getMonth().toString() + "-" + LocalDate.now().getYear();
 
         for (AccountForEmployee employee : employees) {
             // Kiểm tra xem đã có bản ghi KPI cho stylist này trong tháng hiện tại chưa
-            Optional<KPIMonth> existingKPIRecord = kpiMonthRepository.findByEmployeeAndMonth(employee, currentMonth);
+            Optional<KPIMonth> existingKPIRecord = kpiMonthRepository.findByEmployeeAndMonthAndEmployeeRole(employee, currentMonth, "Stylist");
 
             if (existingKPIRecord.isPresent()) {
                 // Nếu đã có, cộng dồn KPI mới vào KPI cũ

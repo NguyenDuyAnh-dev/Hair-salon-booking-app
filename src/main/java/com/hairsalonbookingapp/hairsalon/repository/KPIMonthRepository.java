@@ -11,6 +11,10 @@ import java.util.List;
 import java.util.Optional;
 
 public interface KPIMonthRepository extends JpaRepository<KPIMonth, Long> {
-    Optional<KPIMonth> findByEmployeeAndMonth(AccountForEmployee employee, String month);
-    Page<KPIMonth> findByMonth(String month, Pageable pageable);
+    Optional<KPIMonth> findByEmployeeAndMonthAndEmployeeRole(AccountForEmployee employee, String month, String role);
+
+    Page<KPIMonth> findByMonthAndEmployeeRole(String month, String role, Pageable pageable);
+
+    Page<KPIMonth> findByEmployeeRole(String role, Pageable pageable);
+
 }
