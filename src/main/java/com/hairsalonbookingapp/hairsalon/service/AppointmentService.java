@@ -433,7 +433,7 @@ public class AppointmentService {
 
     public KPIMonthListResponse getAllKPI(String month, int page, int size) {
         // Lấy dữ liệu từ repository và phân trang
-        Page<KPIMonth> kpiMonthPage = kpiMonthRepository.findByMonth(month, PageRequest.of(page, size));
+        Page<KPIMonth> kpiMonthPage = kpiMonthRepository.findByMonthAndEmployeeRole(month,"Stylist", PageRequest.of(page, size));
 
         // Chuyển đổi từng KPIMonth thành KPIMonthResponseDTO
         List<KPIMonthResponseDTO> content = new ArrayList<>();
@@ -460,7 +460,7 @@ public class AppointmentService {
 
     public KPIMonthListResponse getAllKPIAllMonth(int page, int size) {
         // Lấy dữ liệu từ repository và phân trang
-        Page<KPIMonth> kpiMonthPage = kpiMonthRepository.findAll(PageRequest.of(page, size));
+        Page<KPIMonth> kpiMonthPage = kpiMonthRepository.findByEmployeeRole("Stylist", PageRequest.of(page, size));
 
         // Chuyển đổi từng KPIMonth thành KPIMonthResponseDTO
         List<KPIMonthResponseDTO> content = new ArrayList<>();

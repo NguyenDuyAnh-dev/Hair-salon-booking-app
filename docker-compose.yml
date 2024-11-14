@@ -10,7 +10,7 @@ services:
       - "3307:3306"
 
   app:
-    image: anhnguyen741/hairsalon:v55.0
+    image: anhnguyen741/hairsalon:v56.0
     container_name: springboot_container  # Tên của container ứng dụng
     environment:
       MYSQL_URL: "jdbc:mysql://mysql_container:3306/hairsalonapp"
