@@ -107,6 +107,12 @@ public class AppointmentAPI {
         return ResponseEntity.ok(kpiMonthListResponse);
     }
 
+    @GetMapping("/KPI")
+    public ResponseEntity viewKPIAllMonth(@RequestParam int page, @RequestParam(defaultValue = "10") int size){
+        KPIMonthListResponse kpiMonthListResponse = appointmentService.getAllKPIAllMonth(page, size);
+        return ResponseEntity.ok(kpiMonthListResponse);
+    }
+
     @PostMapping("/system")
     public ResponseEntity createNewAppointmentBySystem(@Valid @RequestBody AppointmentRequestSystem appointmentRequestSystem){
         AppointmentResponse appointment = appointmentService.createNewAppointmentBySystem(appointmentRequestSystem);

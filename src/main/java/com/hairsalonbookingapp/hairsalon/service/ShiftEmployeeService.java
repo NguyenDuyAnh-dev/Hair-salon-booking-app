@@ -453,6 +453,118 @@ public class ShiftEmployeeService {
         return shiftEmployeeResponsePage;
     }
 
+    //HÀM TẠO SHIFT EMPLOYEE: TẠO SHIFT EMPLOYEE CỦA 1 STYLIST TỪ NGÀY HIỆN TẠI ĐẾN CUỐI TUẦN
+// STARTDATE LÀ NGÀY BẮT ĐẦU: VÍ DỤ STARTDATE LÀ 13/11/2024 THÌ HỆ THỐNG SẼ TẠO CHO STYLIST CÁC CA NẰM TRONG KHOẢN TỪ 13/11/24 - 17/11/24
+//VÍ DỤ START DATE NHẬP LÀ 16/11/2024 THÌ HỆ THỐNG SẼ TẠO CHO STYLIST CÁC CA NẰM TRONG KHOẢN 16/11 – 17/11(CHỦ NHẬT) NẾU CÓ STYLIST ĐĂNG KÝ CA TRONG NGÀY ĐÓ
+// VÍ DỤ KHÁC LÀ: VÀO NGÀY THỨ 5 (14/11/2024), 1 STYLIST ĐÃ ĐĂNG KÝ NGÀY LÀM VIỆC LÀ THỨ 2,3 VÀ THỨ 6, TRONG NGÀY NÀY, NẾU CHỨC NĂNG NÀY ĐC SỬ DỤNG THÌ NÓ SẼ CHỈ TẠO CHO STYLIST NÀY CA THỨ 6 THÔI, VÌ THỨ 2,3 NÓ KHÔNG NẰM TRONG KHOẢN THỨ 6 – CHỦ NHẬT
+//CHỨC NĂNG NÀY CHỈ TẠO CÁC CA TRONG PHẠM VI 1 TUẦN (LOGIC Y CHĂNG HÀM CREATE ALL, KHÁC Ở CHỖ THAY VÌ NÓ TẠO TUẦN SAU THÌ NÓ CÓ THỂ TẠO CHO BẤT KỲ TUẦN NÀO – THÔNG QUA START DATE, THẾ NÊN NẾU TẠO CA CHO TUẦN SAU THÌ CHỈ CẦN NHẬP START DATE LÀ 18/11/2024 (THỨ 2 TUẦN SAU))
+//START DATE NHẬP THEO ĐỊNH DẠNG YYYY-MM-DD
+
+    public List<ShiftEmployeeResponse> generateShiftEmployeeByDate(String stylistId, String startDate){
+        AccountForEmployee accountForEmployee = employeeRepository.findAccountForEmployeeByEmployeeId(stylistId);
+        if(accountForEmployee == null){
+            throw new EntityNotFoundException("Stylist not found!");
+        }
+        String days = accountForEmployee.getDays(); // LẤY CÁC NGÀY STYLIST CHỌN
+        String[] daysOfWeek = days.split(","); // TÁCH CHUỖI CÁC NGÀY THÀNH 1 DANH SÁCH DỰA TRÊN DẤU ,
+        List<LocalDate> daysUntilWeekDays = timeService.getDaysUntilWeekend(startDate);
+        List<ShiftEmployee> shiftEmployeeList = new ArrayList<>();
+        List<ShiftEmployeeResponse> shiftEmployeeResponseList = new ArrayList<>();
+        for(String day : daysOfWeek){
+            // TẠO MỚI SHIFT EMPLOYEE
+            ShiftEmployee shiftEmployee = new ShiftEmployee();
+            ShiftInWeek shiftInWeek = shiftWeekRepository
+                    .findShiftInWeekByDayOfWeekAndIsAvailableTrue(day);
+            shiftEmployee.setShiftInWeek(shiftInWeek);
+            shiftEmployee.setAccountForEmployee(accountForEmployee);
+            // SET DAY
+            DayOfWeek dayOfWeek = DayOfWeek.valueOf(day);
+            for(LocalDate date : daysUntilWeekDays){
+                if(date.getDayOfWeek() == dayOfWeek){
+                    shiftEmployee.setDate(date.toString());
+                    break;
+                }
+            }
+            if(shiftEmployee.getDate() != null){
+                // SAVE VÀO DB
+                ShiftEmployee newShiftEmployee = shiftEmployeeRepository.save(shiftEmployee);
+                // TẠO CÁC SLOT
+                SlotRequest slotRequest = new SlotRequest();
+                slotRequest.setDate(newShiftEmployee.getDate());
+                slotRequest.setShiftEmployeeId(newShiftEmployee.getShiftEmployeeId());
+                slotRequest.setStartHour(timeService.setStartHour(day));
+                slotRequest.setEndHour(timeService.setEndHour(day));
+                slotRequest.setDuration(timeService.duration);
+                List<Slot> slotList = slotService.generateSlots(slotRequest);
+                newShiftEmployee.setSlots(slotList);
+                // SAVE LẠI VÀO DB
+                ShiftEmployee savedShift = shiftEmployeeRepository.save(newShiftEmployee);
+
+                //ADD TO ACCOUNT FOR EMPLOYEE => MỘT STYLIST CÓ NHIỀU SHIFTS
+                shiftEmployeeList.add(savedShift);
+
+                // GENERATE RESPONSE
+                ShiftEmployeeResponse shiftEmployeeResponse = new ShiftEmployeeResponse();
+                shiftEmployeeResponse.setId(savedShift.getShiftEmployeeId());
+                shiftEmployeeResponse.setAvailable(savedShift.isAvailable());
+                shiftEmployeeResponse.setEmployeeId(savedShift.getAccountForEmployee().getEmployeeId());
+                shiftEmployeeResponse.setName(savedShift.getAccountForEmployee().getName());
+                shiftEmployeeResponse.setDayInWeek(savedShift.getShiftInWeek().getDayOfWeek());
+                shiftEmployeeResponse.setDate(savedShift.getDate());
+
+                shiftEmployeeResponseList.add(shiftEmployeeResponse);
+            }
+
+        }
+
+        // LƯU LẠI ACCOUNT FOR EMPLOYEE
+        accountForEmployee.setShiftEmployees(shiftEmployeeList);
+        employeeRepository.save(accountForEmployee);
+
+        return shiftEmployeeResponseList;
+    }
+
+
+
+    // TẠO ALL SHIFTS CHO ALL STYLISTS
+// KHUYẾN CÁO: NẾU 1 STYLIST MUỐN ĐỔI NGÀY LÀM VIỆC TRONG TUẦN, CÓ THỂ DÙNG RIÊNG HÀM NÓI Ở  TRÊN 1 CÁCH ĐỘC LẬP, NHƯNG PHẢI ĐẢM BAỎ RẰNG HÀM DƯỚI NÀY ĐÃ ĐƯỢC SỬ DỤNG TRONG TUẦN NÀY
+// VÌ NẾU DÙNG HÀM TRÊN TRƯỚC RỒI MỚI DÙNG HÀM DƯỚI, HÀM DƯỚI KHÔNG THỂ CHẠY ĐƯỢC VÌ HỆ THỐNG PHÁT HIỆN TUẦN ĐỊNH TẠO ĐÃ CÓ CA RỒI -> HỆ THỐNG MẶC ĐỊNH HIỂU HÀM DƯỚI ĐÃ DÙNG MẶC DÙ THỰC TẾ MÌNH CHƯA DÙNG
+// HÀM NÀY CÓ THỂ TẠO CA LÀ VIỆC CHO TOÀN BỘ STYLIST VỚI LOGIC GIỐNG HÀM TRÊN HÀM TRÊN LÀ TẠO CA CHO 1 THẰNG, HÀM DƯỚI TẠO CHO NHIỀU ĐỨA, THỰC RA LOGIC 2 HÀM NÀY Y CHANG 2 HÀM CŨ
+
+    public List<ShiftEmployeeResponse> generateAllShiftEmployeesByDate(String startDate){
+        //CHECK XEM MANAGER ĐÃ DÙNG CHỨC NĂNG NÀY CHƯA
+        List<LocalDate> daysUntilWeekend = timeService.getDaysUntilWeekend(startDate);
+        List<ShiftEmployee> shiftEmployeeList = shiftEmployeeRepository.findAll(); // LIST CÁC SHIFT EMPLOYEE TRONG DB
+        for(LocalDate date : daysUntilWeekend){
+            for(ShiftEmployee shiftEmployee : shiftEmployeeList){
+                if(date.toString().equals(shiftEmployee.getDate())){
+                    throw new DuplicateEntity("You can only use this function once per week!!!");
+                }
+            }
+        }
+        // => MANAGER CHƯA DÙNG CHỨC NĂNG NÀY
+        List<String> foundStylists = employeeService.getStylistsThatWorkDaysNull(); // CHECK XEM CÓ STYLIST NÀO CHƯA SET WORKDAY
+        if(foundStylists.isEmpty()){ //TÌM KHÔNG THẤY
+            String role = "Stylist";
+            String status = "Workday";
+            List<ShiftEmployeeResponse> allShiftEmployeeResponseList = new ArrayList<>();
+            List<AccountForEmployee> accountForEmployeeList = employeeRepository
+                    .findAccountForEmployeesByRoleAndStatusAndIsDeletedFalse(role, status);
+            if(!accountForEmployeeList.isEmpty()) {
+                for(AccountForEmployee accountForEmployee : accountForEmployeeList){
+                    List<ShiftEmployeeResponse> shiftEmployeeResponseList = generateShiftEmployeeByDate(accountForEmployee.getEmployeeId(), startDate);
+                    allShiftEmployeeResponseList.addAll(shiftEmployeeResponseList);
+                }
+                return allShiftEmployeeResponseList;
+            } else {
+                throw new EntityNotFoundException("Can not execute!");
+            }
+        } else {
+            throw new EntityNotFoundException("Can not process because some stylists did not set work days!!!");
+        }
+    }
+
+
 /* => COMMENT TẠM THỜI
 
     //xóa shift -> STYLIST LÀM KHI NÓ MUỐN HỦY SHIFT, NHƯNG PHẢI THÔNG BÁO CHO MANAGER TRƯỚC
