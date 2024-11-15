@@ -9,4 +9,6 @@ public class SlotResponse {
     private boolean isAvailable;
     private long shiftEmployeeId;
     private String date;
+    private String stylist;
+    private String level;
 }

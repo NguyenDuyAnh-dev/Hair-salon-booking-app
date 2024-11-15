@@ -401,6 +401,8 @@ public class SlotService {
             slotResponse.setDate(slot.getDate());
             slotResponse.setStartSlot(slot.getStartSlot());
             slotResponse.setAvailable(slot.isAvailable());
+            slotResponse.setStylist(slot.getShiftEmployee().getAccountForEmployee().getName());
+            slotResponse.setLevel(slot.getShiftEmployee().getAccountForEmployee().getStylistLevel());
 
             slotResponseList.add(slotResponse);
         }
