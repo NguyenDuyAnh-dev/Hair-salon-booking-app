@@ -13,6 +13,7 @@ import com.hairsalonbookingapp.hairsalon.model.request.RequestSalaryMonthForAnEm
 import com.hairsalonbookingapp.hairsalon.model.response.SalaryMonthListResponse;
 import com.hairsalonbookingapp.hairsalon.model.response.SalaryMonthResponse;
 import com.hairsalonbookingapp.hairsalon.repository.EmployeeRepository;
+import com.hairsalonbookingapp.hairsalon.repository.KPIMonthRepository;
 import com.hairsalonbookingapp.hairsalon.repository.SalaryMonthRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,9 @@ public class SalaryMonthService {
 
     @Autowired
     EmailService emailService;
+
+    @Autowired
+    KPIMonthRepository kpiMonthRepository;
 
     @Autowired
     ModelMapper modelMapper;
@@ -121,56 +125,58 @@ public class SalaryMonthService {
             }
 
             Month currentMonth = LocalDate.now().getMonth();
-            boolean salaryCreated = false; // Biến để kiểm tra có tạo được lương không
+            boolean salaryCreated = false;
 
-            // Lặp qua từng nhân viên để tạo SalaryMonth
             for (AccountForEmployee employee : employees) {
                 // Kiểm tra xem nhân viên đã có lương cho tháng hiện tại hay chưa
                 Optional<SalaryMonth> existingSalaryMonth = salaryMonthRepository.findByEmployeeAndMonth(employee, currentMonth);
                 if (existingSalaryMonth.isPresent()) {
-                    // Nếu đã có lương cho tháng hiện tại, bỏ qua hoặc cập nhật tùy theo yêu cầu
                     System.out.println("Salary already exists for employee: " + employee.getEmployeeId());
-                    continue; // Bỏ qua nếu không muốn cập nhật
-                }
-
-                if(employee.getBasicSalary() == null){
                     continue;
                 }
+
+                if (employee.getBasicSalary() == null) {
+                    continue;
+                }
+
+                // Lấy KPIMonth hoặc gán giá trị mặc định nếu không tìm thấy
+                KPIMonth kpiMonth = kpiMonthRepository.findByEmployeeAndMonth(employee, currentMonth.toString())
+                        .orElseGet(() -> {
+                            KPIMonth defaultKPIMonth = new KPIMonth();
+                            defaultKPIMonth.setKpi(0); // KPI mặc định là 0
+                            defaultKPIMonth.setTargetKPI(1); // Đặt 1 để tránh chia cho 0
+                            return defaultKPIMonth;
+                        });
 
                 SalaryMonth salaryMonth = new SalaryMonth();
                 salaryMonth.setEmployee(employee);
                 salaryMonth.setMonth(currentMonth);
 
                 double commessionOverratedFromKPI = 1;
-                if (employee.getCommessionOverratedFromKPI() != null) {
-                    if(employee.getCommessionOverratedFromKPI() > 0){
-                        commessionOverratedFromKPI = employee.getCommessionOverratedFromKPI();
-                        salaryMonth.setCommessionOveratedFromKPI(commessionOverratedFromKPI);
-                    }else{
-                        throw new CreateException("Commession Overrated From KPI must be greater than 0");
-                    }
+                if (employee.getCommessionOverratedFromKPI() != null && employee.getCommessionOverratedFromKPI() > 0) {
+                    commessionOverratedFromKPI = employee.getCommessionOverratedFromKPI();
+                    salaryMonth.setCommessionOveratedFromKPI(commessionOverratedFromKPI);
+                } else if (employee.getCommessionOverratedFromKPI() != null) {
+                    throw new CreateException("Commession Overrated From KPI must be greater than 0");
                 }
 
                 double fineUnderatedFromKPI = 1;
-                if (employee.getFineUnderatedFromKPI() != null) {
-                    if(employee.getFineUnderatedFromKPI() > 0){
-                        fineUnderatedFromKPI = employee.getFineUnderatedFromKPI();
-                        salaryMonth.setFineUnderatedFromKPI(fineUnderatedFromKPI);
-                    }else{
-                        throw new CreateException("Fine Underated From KPI must be greater than 0");
-                    }
+                if (employee.getFineUnderatedFromKPI() != null && employee.getFineUnderatedFromKPI() > 0) {
+                    fineUnderatedFromKPI = employee.getFineUnderatedFromKPI();
+                    salaryMonth.setFineUnderatedFromKPI(fineUnderatedFromKPI);
+                } else if (employee.getFineUnderatedFromKPI() != null) {
+                    throw new CreateException("Fine Underated From KPI must be greater than 0");
                 }
 
-                double kpiRatio = (double)employee.getKPI() / employee.getTargetKPI(); // Tỷ lệ KPI đạt được
+                // Tính tỷ lệ KPI đạt được từ KPIMonth
+                double kpiRatio = (double) kpiMonth.getKpi() / kpiMonth.getTargetKPI();
 
                 if (kpiRatio < 1.0) {  // KPI dưới mục tiêu
-                    double fine = (1.0 - kpiRatio) * fineUnderatedFromKPI; // Phạt dựa trên phần thiếu
+                    double fine = (1.0 - kpiRatio) * fineUnderatedFromKPI;
                     salaryMonth.setSumSalary(employee.getBasicSalary() - (employee.getBasicSalary() * fine));
-
                 } else if (kpiRatio > 1.0) { // KPI vượt mục tiêu
-                    double bonus = (kpiRatio - 1.0) * commessionOverratedFromKPI; // Thưởng dựa trên phần vượt
+                    double bonus = (kpiRatio - 1.0) * commessionOverratedFromKPI;
                     salaryMonth.setSumSalary(employee.getBasicSalary() + (employee.getBasicSalary() * bonus));
-
                 } else { // KPI bằng mục tiêu
                     salaryMonth.setSumSalary(employee.getBasicSalary());
                 }
@@ -182,24 +188,26 @@ public class SalaryMonthService {
 
                 EmailDetailForEmployeeSalary emailDetail = new EmailDetailForEmployeeSalary();
                 emailDetail.setReceiver(employee);
-                emailDetail.setSubject("Salary Announcement" + currentMonth + "!");
+                emailDetail.setSubject("Salary Announcement " + currentMonth + "!");
                 emailDetail.setLink("http://localhost:5173/loginEmployee");
                 emailDetail.setSumSalary(salaryMonth.getSumSalary());
                 emailService.sendEmailToEmployeeSalary(emailDetail);
 
-                salaryCreated = true; // Đánh dấu là đã tạo lương thành công
+                salaryCreated = true;
             }
+
             if (!salaryCreated) {
-                throw new NoContentException("No salaries were created for any employees. Or all employee was get salary month"); // Ném exception
+                throw new NoContentException("No salaries were created for any employees. Or all employee already had salary for this month.");
             }
 
             return salaryMonthResponses;
 
         } catch (NoContentException e) {
-            throw new NoContentException("No salaries were created for any employees. Or all employee was get salary month"); // Hoặc sử dụng một exception tùy chỉnh để trả về mã 204
+            throw new NoContentException("No salaries were created for any employees. Or all employee already had salary for this month.");
         }
-//        return null;
     }
+
+
 
 //    public String generateId() {
 //        // Tìm ID cuối cùng theo vai trò
