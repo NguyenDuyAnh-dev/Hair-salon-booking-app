@@ -17,4 +17,6 @@ public interface KPIMonthRepository extends JpaRepository<KPIMonth, Long> {
 
     Page<KPIMonth> findByEmployeeRole(String role, Pageable pageable);
 
+    Optional<KPIMonth> findByEmployeeAndMonth(AccountForEmployee employee, String month);
+
 }
