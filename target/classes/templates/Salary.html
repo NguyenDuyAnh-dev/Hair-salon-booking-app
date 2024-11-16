@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome Email</title>
+    <link rel="stylesheet" href="welcom.css">
+</head>
+<body>
+<table class="body-wrap" bgcolor="#f6f6f6">
+    <tbody>
+    <tr>
+        <td></td>
+        <td class="container">
+            <div class="content">
+                <table class="main" bgcolor="#ffffff" style="width: 100%; max-width: 600px; margin: 20px auto; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                    <tbody>
+                    <tr>
+                        <td class="header" align="center" bgcolor="#71b6f9" style="padding: 20px; font-family: Arial, sans-serif; color: #ffffff;">
+                            <h1 style="margin: 0; font-size: 28px;">Hairsalon.vn</h1>
+                            <p style="margin: 5px 0 0; font-size: 16px;">Thông Báo Lương</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="content-wrap" style="padding: 20px; font-family: Arial, sans-serif; font-size: 16px; color: #333;">
+                            <table width="100%">
+                                <tbody>
+                                <tr>
+                                    <td class="content-block" style="padding-bottom: 15px;">
+                                        Xin chào, <strong>[[${name}]]</strong>!
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="content-block" style="padding-bottom: 15px;">
+                                        Chúng tôi xin thông báo rằng **lương của bạn đã được thanh toán thành công**.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="content-block" style="padding-bottom: 15px;">
+                                        Tổng lương của bạn là <strong>[[${sumsalary}]]</strong>đ.
+                                        Để xem thông tin chi tiết về lương, vui lòng đăng nhập vào hệ thống hoặc nhấn vào nút bên dưới.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="content-block" style="text-align: center; padding-bottom: 25px;">
+                                        <a th:href="${link}" class="btn-primary" style="background-color: #4CAF50; color: #fff; text-decoration: none; padding: 12px 25px; border-radius: 5px; font-weight: bold;">[[${button}]]</a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="content-block" style="text-align: center; font-size: 14px; color: #555;">
+                                        Cảm ơn bạn đã đồng hành cùng <b>Hairsalon.vn</b>!
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+                <div class="footer" style="padding: 15px 0; background-color: #f4f4f4; text-align: center; font-family: Arial, sans-serif; font-size: 14px; color: #777;">
+                    <table width="100%">
+                        <tbody>
+                        <tr>
+                            <td class="aligncenter content-block">
+                                <a href="#" style="color: #888; text-decoration: none;">Hủy đăng ký</a> nhận thông báo này.
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </td>
+        <td></td>
+    </tr>
+    </tbody>
+
+</table>
+</body>
+</html>

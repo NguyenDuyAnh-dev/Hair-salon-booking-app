@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thông Báo Hủy Lịch Hẹn</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background-color: #ff4d4d;
+            color: #ffffff;
+            padding: 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .content {
+            padding: 20px;
+            color: #333333;
+        }
+        .content p {
+            margin: 10px 0;
+            font-size: 16px;
+        }
+        .footer {
+            background-color: #f4f4f4;
+            padding: 20px;
+            text-align: center;
+        }
+        .footer p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #777777;
+        }
+        .btn {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 12px 25px;
+            background-color: #4CAF50;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+        .btn:hover {
+            background-color: #45a049;
+        }
+        @media only screen and (max-width: 600px) {
+            .container {
+                margin: 20px;
+            }
+            .header h1 {
+                font-size: 20px;
+            }
+            .content p {
+                font-size: 14px;
+            }
+            .btn {
+                width: 100%;
+                padding: 12px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>❌ Lịch Hẹn Của Bạn Đã Bị Hủy</h1>
+    </div>
+    <div class="content">
+        <p>Xin chào <strong>[[${name}]]</strong>,</p>
+        <p>Chúng tôi rất tiếc phải thông báo rằng lịch hẹn của bạn đã bị hủy.</p>
+        <p><strong>📋 Mã Lịch Hẹn:</strong> [[${appointmentID}]]</p>
+        <p><strong>💇 Dịch Vụ:</strong> [[${serviceName}]]</p>
+        <p><strong>✂️ Chuyên Viên:</strong> [[${stylistName}]]</p>
+        <p><strong>📅 Ngày Đã Đặt:</strong> [[${date}]] – [[${time}]]</p>
+    </div>
+    <div class="footer">
+        <p>Nếu bạn muốn đặt lại lịch hẹn, vui lòng nhấn vào nút bên dưới:</p>
+        <a href="[[${rescheduleURL}]]" class="btn">🔄 Đặt Lại Lịch Hẹn</a>
+        <p>Cảm ơn bạn đã sử dụng dịch vụ của Hair Salon Booking App!</p>
+    </div>
+</div>
+
+</body>
+</html>
